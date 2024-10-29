@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 20,
+    padding: 20,
   },
   totalText: {
     fontSize: 18,
@@ -162,13 +163,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEB3B',
     paddingVertical: 15,
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 2,
     alignItems: 'center',
+    marginBottom: 30
+
   },
   checkoutText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+
   },
 });
 
