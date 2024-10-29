@@ -38,7 +38,7 @@ const CartScreen = () => {
           <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'increase')}><Text style={styles.quantityText}>+</Text></TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
+      <Text style={styles.itemPrice}>{(item.price * item.quantity).toFixed(2)} Ar</Text>
       <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(item.id)}><Text style={styles.deleteText}>✕</Text></TouchableOpacity>
     </View>
   );
@@ -55,7 +55,7 @@ const CartScreen = () => {
       />
       <View style={styles.footer}>
         <Text style={styles.totalText}>Total :</Text>
-        <Text style={styles.totalAmount}>${totalAmount}</Text>
+        <Text style={styles.totalAmount}>{totalAmount} Ar</Text>
       </View>
       <TouchableOpacity style={styles.checkoutButton}>
         <Text style={styles.checkoutText}>Payer</Text>
