@@ -10,7 +10,7 @@ export default function MenuScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    axios.get('http://192.168.88.178:8000/api/listemenu')
+    axios.get('http://192.168.88.12:8000/api/listemenu')
       .then(response => {
         setMenu(response.data.liste);
         setLoading(false);
@@ -41,11 +41,11 @@ export default function MenuScreen({ navigation }) {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.x.x:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `http://192.168.88.12:8000/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.itemText}>{item.nom}</Text>
         <Text style={styles.priceText}>
-          {item.prix === 'number' ? item.prix.toFixed(2) : '0.00'} Ar
+          {item.prix} Ar
         </Text>
         <TouchableOpacity style={styles.addButton} onPress={() => addToCart(item)}>
           <Text style={styles.addButtonText}>Ajouter</Text>
@@ -91,7 +91,7 @@ export default function MenuScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 2,
     backgroundColor: '#fff',
   },
   iconContainer: {
@@ -145,13 +145,15 @@ const styles = StyleSheet.create({
   cartButton: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#28A745',
+    backgroundColor: 'rgba(10, 100, 255, 0.8)',
     borderRadius: 5,
     alignItems: 'center',
+       marginBottom: 65
   },
   cartButtonText: {
     fontSize: 16,
     color: '#fff',
     fontWeight: 'bold',
+
   },
 });

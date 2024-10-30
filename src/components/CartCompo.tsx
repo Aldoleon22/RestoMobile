@@ -160,12 +160,13 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   checkoutButton: {
-    backgroundColor: '#FFEB3B',
+    backgroundColor: 'rgba(10, 100, 255, 0.8)',
     paddingVertical: 15,
     borderRadius: 8,
     marginTop: 2,
     alignItems: 'center',
-    marginBottom: 30
+    marginBottom: 50,
+
 
   },
   checkoutText: {
