@@ -1,7 +1,7 @@
 // src/Login.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import axios from 'axios';
+import ApiService from '../axiosConfig';
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,12 +9,13 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://192.168.88.12:8000/api/login', { email, password });
+      const response = await ApiService.post(`/login`, { email, password });
       // Enregistrez le token ou les informations de l'utilisateur ici
       // Naviguez vers l'écran Home après une connexion réussie
       navigation.navigate('Home');
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
+     
     }
   };
 
