@@ -10,7 +10,7 @@ export default function MenuScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    axios.get('http://192.168.88.12:8000/api/listemenu')
+    axios.get('http://192.168.88.16:8000/api/listemenu')
       .then(response => {
         setMenu(response.data.liste);
         setLoading(false);
@@ -41,7 +41,7 @@ export default function MenuScreen({ navigation }) {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.12:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `http://192.168.88.16:8000/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.itemText}>{item.nom}</Text>
         <Text style={styles.priceText}>
@@ -114,9 +114,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   image: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
+    width: 170,
+    height: 170,
+    borderRadius: 7,
     marginBottom: 10,
   },
   textContainer: {
