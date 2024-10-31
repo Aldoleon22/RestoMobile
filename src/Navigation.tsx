@@ -5,7 +5,8 @@ import HomeScreen from './components/HomeCompo';
 import MenuScreen from './components/MenuCompo';
 import CartScreen from './components/CartCompo';
 import ProfileScreen from './components/ProfilCompo';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'importer vos icônes
+import TableScreen from './components/TableCompo';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Tab = createBottomTabNavigator();
 
@@ -74,6 +75,17 @@ export default function Navigation() {
             ),
           }}
         />
+        <Tab.Screen
+          name="Table"
+          component={TableScreen}
+          options={{
+            title: 'Table',
+            tabBarIcon: ({ color }) => (
+              <Icon name="table-restaurant" size={24} color={color} />
+            ),
+          }}
+        />
+        
       </Tab.Navigator>
     </NavigationContainer>
   );
