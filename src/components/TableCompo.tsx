@@ -16,7 +16,7 @@ const Table = () => {
     // Récupération des tables
     const showTables = async () => {
         try {
-            const response = await axios.get('http://192.168.88.12:8000/api/tables');
+            const response = await axios.get('http://192.168.88.16:8000/api/tables');
             setTables(response.data);
         } catch (error) {
             console.log("Erreur lors de la récupération des tables:", error);
@@ -51,7 +51,7 @@ const Table = () => {
     // Suppression d'une table
     const deleteTable = async (id) => {
         try {
-            await axios.delete('http://192.168.88.12:8000/api/tables/delete/id');
+            await axios.delete('http://192.168.88.16:8000/api/tables/delete/id');
             setTables(tables.filter(item => item.id !== id));
             ToastAndroid.show("Suppression réussie", ToastAndroid.SHORT);
         } catch (error) {

@@ -9,7 +9,7 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://192.168.88.12:8000/api/login', { email, password });
+      const response = await axios.post('http://192.168.88.16:8000/api/login', { email, password });
       // Enregistrez le token ou les informations de l'utilisateur ici
       // Naviguez vers l'écran Home après une connexion réussie
       navigation.navigate('Home');
