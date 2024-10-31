@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndi
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-export default function MenuScreen({ navigation }) {
+export default function MenuScreen({ navigation,route }) {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  // const {id} = route.params;
 
   useEffect(() => {
     axios.get('http://192.168.88.12:8000/api/listemenu')
