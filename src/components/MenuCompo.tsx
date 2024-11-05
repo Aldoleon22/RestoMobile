@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndi
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ApiService from '../../axiosConfig';
+import { IMG_URL } from '../../apiConfig';
 
 export default function MenuScreen({ navigation }) {
   const [menu, setMenu] = useState([]);
@@ -42,7 +43,7 @@ export default function MenuScreen({ navigation }) {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.16:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.itemText}>{item.nom}</Text>
         <Text style={styles.priceText}>

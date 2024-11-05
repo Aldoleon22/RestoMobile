@@ -10,8 +10,7 @@ const Login = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       const response = await ApiService.post(`/login`, { email, password });
-      // Enregistrez le token ou les informations de l'utilisateur ici
-      // Naviguez vers l'écran Home après une connexion réussie
+
       navigation.navigate('Home');
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
