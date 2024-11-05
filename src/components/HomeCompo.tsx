@@ -1,16 +1,16 @@
-import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ScrollView } from 'react-native';
+import ApiService from './../../axiosConfig';
 
 export default function HomeScreen({ navigation }) {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Create a ref to store scrollable FlatLists
   const scrollRefs = useRef({});
 
   useEffect(() => {
-    axios.get('http://192.168.88.16:8000/api/listemenu')
+    ApiService.get(`/listemenu`)
       .then(response => {
         console.log(response.data); // Log the response to check its structure
         setMenu(response.data.liste);
@@ -37,12 +37,6 @@ export default function HomeScreen({ navigation }) {
         offset += direction * scrollAmount; // Adjust offset based on direction
 
         scrollViewRef.scrollToOffset({ offset, animated: true });
-
-        // Clear the interval if it reaches the end of the content
-        scrollViewRef.getScrollResponder().scrollTo({
-          x: offset,
-          animated: true,
-        });
 
         // Stop scrolling if it goes out of bounds
         if (offset < 0 || offset > (scrollViewRef.props.data.length * 140) - 140) { // 140 is the width of the card
@@ -77,7 +71,7 @@ export default function HomeScreen({ navigation }) {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.popularCard}>
-              <Image source={{ uri: `http://192.168.88.16:8000/storage/photo/${item.photo}` }} style={styles.popularImage} />
+              <Image source={{ uri: `http://192.168.88.11:8000/storage/photo/${item.photo}` }} style={styles.popularImage} />
               <Text style={styles.popularText}>{item.nom}</Text>
               <Text style={styles.priceText}>{item.prix} Ar</Text>
             </View>

@@ -1,30 +1,72 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
+import ApiService from './../../axiosConfig'; // Import your API service
 
 const CartScreen = () => {
-  const [cartItems, setCartItems] = useState([
-    { id: '1', name: 'Burger au Poulet', price: 7.00, quantity: 3, image: 'https://example.com/burger.png' },
-    { id: '2', name: 'Salade d’Avocat', price: 5.22, quantity: 1, image: 'https://example.com/salad.png' },
-    { id: '3', name: 'Soupe de Légumes', price: 3.32, quantity: 2, image: 'https://example.com/soup.png' },
-    { id: '4', name: 'Glace', price: 2.58, quantity: 5, image: 'https://example.com/icecream.png' },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
+
+  useEffect(() => {
+    fetchCartItems(); // Fetch cart items on component mount
+  }, []);
+
+  const fetchCartItems = async () => {
+    try {
+      const response = await ApiService.get('/commande'); // Adjust the endpoint as needed
+      setCartItems(response.data); // Assuming your API returns an array of items
+    } catch (error) {
+      console.error("Erreur lors de la récupération des articles du panier :", error);
+    }
+  };
 
   const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
 
-  const updateQuantity = (id, operation) => {
-    setCartItems(prevItems => {
-      return prevItems.map(item => {
-        if (item.id === id) {
-          const newQuantity = operation === 'increase' ? item.quantity + 1 : Math.max(0, item.quantity - 1);
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      });
-    });
+  const updateQuantity = async (id, operation) => {
+    const item = cartItems.find(item => item.id === id);
+    const newQuantity = operation === 'increase' ? item.quantity + 1 : Math.max(0, item.quantity - 1);
+
+    // Update local state
+    setCartItems(prevItems => prevItems.map(item =>
+      item.id === id ? { ...item, quantity: newQuantity } : item
+    ));
+
+    // Update in the database
+    try {
+      await ApiService.put(`/commande/${id}`, { quantity: newQuantity }); // Adjust the endpoint
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la quantité :", error);
+      Alert.alert("Erreur lors de la mise à jour de la quantité");
+    }
   };
 
-  const removeItem = (id) => {
+  const removeItem = async (id) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+
+    try {
+      await ApiService.delete(`/commande/${id}`); // Adjust the endpoint
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'article :", error);
+      Alert.alert("Erreur lors de la suppression de l'article");
+    }
+  };
+
+  const submitOrder = async () => {
+    if (cartItems.length === 0) {
+      Alert.alert("Votre panier est vide");
+      return;
+    }
+
+    try {
+      const response = await ApiService.post('/orders', { items: cartItems });
+      if (response.data.success) {
+        Alert.alert("Commande réussie", response.data.message);
+        setCartItems([]); // Clear cart after order
+      } else {
+        Alert.alert("Erreur", response.data.message);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de la commande :", error);
+      Alert.alert("Erreur lors de l'envoi de la commande");
+    }
   };
 
   const renderItem = ({ item }) => (
@@ -33,80 +75,71 @@ const CartScreen = () => {
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
         <View style={styles.quantityContainer}>
-          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'decrease')}><Text style={styles.quantityText}>-</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'decrease')}>
+            <Text style={styles.quantityText}>-</Text>
+          </TouchableOpacity>
           <Text style={styles.quantity}>{item.quantity}</Text>
-          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'increase')}><Text style={styles.quantityText}>+</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'increase')}>
+            <Text style={styles.quantityText}>+</Text>
+          </TouchableOpacity>
         </View>
       </View>
       <Text style={styles.itemPrice}>{(item.price * item.quantity).toFixed(2)} Ar</Text>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(item.id)}><Text style={styles.deleteText}>✕</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(item.id)}>
+        <Text style={styles.deleteText}>✕</Text>
+      </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Panier</Text>
-      <Text style={styles.date}>Jeu, 6 Juin</Text>
-      <Text style={styles.addOrder}>+ Ajouter à la commande</Text>
       <FlatList
         data={cartItems}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id.toString()}
       />
       <View style={styles.footer}>
         <Text style={styles.totalText}>Total :</Text>
         <Text style={styles.totalAmount}>{totalAmount} Ar</Text>
       </View>
-      <TouchableOpacity style={styles.checkoutButton}>
+      <TouchableOpacity style={styles.checkoutButton} onPress={submitOrder}>
         <Text style={styles.checkoutText}>Payer</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffF',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    padding: 20,
+    backgroundColor: '#fff',
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  date: {
-    fontSize: 16,
-    color: '#555',
-  },
-  addOrder: {
-    color: '#999',
-    marginVertical: 10,
+    marginBottom: 20,
   },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 10,
-    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingVertical: 10,
   },
   image: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    marginRight: 10,
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 15,
   },
   itemDetails: {
     flex: 1,
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -114,41 +147,41 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   quantityButton: {
-    width: 25,
-    height: 25,
+    width: 30,
+    height: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#ddd',
     borderRadius: 5,
   },
   quantityText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   quantity: {
-    marginHorizontal: 8,
-    fontSize: 16,
+    marginHorizontal: 10,
+    fontSize: 18,
   },
   itemPrice: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    color: 'green',
   },
   deleteButton: {
-    padding: 5,
     marginLeft: 10,
-    backgroundColor: '#FFEBEE',
-    borderRadius: 5,
   },
   deleteText: {
-    color: '#E53935',
-    fontWeight: 'bold',
+    fontSize: 18,
+    color: 'red',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 20,
-    padding: 20,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
   },
   totalText: {
     fontSize: 18,
@@ -157,23 +190,19 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'green',
   },
   checkoutButton: {
-    backgroundColor: 'rgba(10, 100, 255, 0.8)',
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginTop: 2,
+    backgroundColor: '#007BFF',
+    padding: 15,
+    borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 50,
-
-
+    marginTop: 20,
   },
   checkoutText: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
-
   },
 });
 

@@ -1,159 +1,234 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import axios from 'axios';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import React, { useEffect, useState } from 'react';
+import {
+    View,
+    Text,
+    FlatList,
+    Button,
+    Modal,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    ScrollView,
+    Alert,
+} from 'react-native';
+import { TiMinusOutline, TiPlusOutline } from 'react-icons/ti'; // Replace with a compatible icon library
+import ApiService from './../../axiosConfig';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-export default function MenuScreen({ navigation }) {
-  const [menu, setMenu] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  useEffect(() => {
-    axios.get('http://192.168.88.16:8000/api/listemenu')
-      .then(response => {
-        setMenu(response.data.liste);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Erreur lors de la récupération des menus :", error);
-        setLoading(false);
-      });
-  }, []);
+const Nouveaux = () => {
+    const route = useRoute();
+    const tableId = route.params?.tableId;
+    const [commandeId, setCommandeId] = useState(null);
+    const [selectRepas, setSelectRepas] = useState([]);
+    const [activeCategory, setActiveCategory] = useState('Tous');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [menu, setMenu] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [categories, setCategories] = useState([]);
+    const navigation = useNavigation();
 
-  const addToCart = (item) => {
-    const existingItem = cart.find(cartItem => cartItem.id === item.id);
-    if (existingItem) {
-      setCart(cart.map(cartItem =>
-        cartItem.id === item.id
-          ? { ...cartItem, quantity: cartItem.quantity + 1 }
-          : cartItem
-      ));
-    } else {
-      setCart([...cart, { ...item, quantity: 1 }]);
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await ApiService.get('/listemenu');
+            const fetchedMenu = response.data.liste;
+            setMenu(fetchedMenu);
+            const uniqueCategories = ['Tous', ...new Set(fetchedMenu.map(item => item.categorie))];
+            setCategories(uniqueCategories);
+        } catch (error) {
+            setError("Erreur lors de la récupération des données.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSelectReservation = (repas) => {
+        const existingRepas = selectRepas.find(item => item.id === repas.id);
+        if (existingRepas) {
+            setSelectRepas(selectRepas.map(item =>
+                item.id === repas.id ? { ...item, quantite: item.quantite + 1 } : item
+            ));
+        } else {
+            setSelectRepas([...selectRepas, { ...repas, quantite: 1 }]);
+        }
+    };
+
+    const handleRemoveRepas = (repas) => {
+        setSelectRepas(prevSelected => prevSelected.filter(selected => selected.id !== repas.id));
+    };
+
+    const handleIncrementQuantite = (repas) => {
+        setSelectRepas(selectRepas.map(item =>
+            item.id === repas.id ? { ...item, quantite: item.quantite + 1 } : item
+        ));
+    };
+
+    const handleDecrementQuantite = (repas) => {
+        setSelectRepas(selectRepas.map(item =>
+            item.id === repas.id && item.quantite > 1 ? { ...item, quantite: item.quantite - 1 } : item
+        ));
+    };
+
+    const filterMenuByCategory = () => {
+        if (activeCategory === 'Tous') return menu;
+        return menu.filter(item => item.categorie === activeCategory);
+    };
+const handlePasserCommande = async () => {
+    if (selectRepas.length === 0) {
+        Alert.alert("Erreur", "Veuillez sélectionner au moins un repas avant de passer la commande.");
+        return;
     }
-  };
 
-  const filterMenu = () => {
-    if (selectedCategory === 'all') return menu;
-    return menu.filter(item => item.categorie === selectedCategory);
-  };
+    // Prepare the payload according to what your backend expects
+    const itemsToSend = selectRepas.map(repas => ({
+        menus_id: repas.id,   // Use the correct field name expected by your backend
+        quantite: repas.quantite,
+    }));
 
-  const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.16:8000/storage/photo/${item.photo}` }} style={styles.image} />
-      <View style={styles.textContainer}>
-        <Text style={styles.itemText}>{item.nom}</Text>
-        <Text style={styles.priceText}>
-          {item.prix} Ar
-        </Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => addToCart(item)}>
-          <Text style={styles.addButtonText}>Ajouter</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    try {
+        const response = await ApiService.post(`/commande/add`, {
+            items: itemsToSend,
+            tableId: tableId,  // Include tableId if needed
+        });
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>
-        <TouchableOpacity onPress={() => setSelectedCategory('all')}>
-          <Icon name="menu" size={30} color={selectedCategory === 'all' ? '#FFA500' : '#000'} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSelectedCategory('plats')}>
-          <Icon name="local-dining" size={30} color={selectedCategory === 'plats' ? '#FFA500' : '#000'} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSelectedCategory('snack')}>
-          <Icon name="fastfood" size={30} color={selectedCategory === 'snack' ? '#FFA500' : '#000'} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSelectedCategory('bar')}>
-          <Icon name="local-drink" size={30} color={selectedCategory === 'bar' ? '#FFA500' : '#000'} />
-        </TouchableOpacity>
-      </View>
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <FlatList
-          data={filterMenu()}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          numColumns={2}
-        />
-      )}
-      <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart', { cart })}>
-        <Text style={styles.cartButtonText}>Voir le Panier</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
+        if (response.data.success) {
+            toast.success("Commande validée avec succès");
+            navigation.navigate('Table');
+        } else {
+            Alert.alert("Erreur", response.data.message || "Une erreur s'est produite lors de la validation de la commande.");
+        }
+    } catch (error) {
+        if (error.response) {
+            console.error("Erreur lors de l'envoi de la commande :", error.response.data);
+            Alert.alert("Erreur", error.response.data.message || "Une erreur s'est produite lors de l'envoi de la commande.");
+        } else {
+            console.error("Erreur lors de l'envoi de la commande :", error.message);
+            Alert.alert("Erreur", "Une erreur s'est produite lors de l'envoi de la commande.");
+        }
+    }
+};
 
+
+    if (loading) return <Text>Chargement...</Text>;
+    if (error) return <Text>{error}</Text>;
+    if (!menu.length) return <Text>Aucune donnée disponible</Text>;
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.categoryContainer}>
+                {categories.map(category => (
+                    <Button
+                        key={category}
+                        title={category}
+                        onPress={() => setActiveCategory(category)}
+                    />
+                ))}
+            </View>
+
+            <ScrollView>
+                <FlatList
+                    data={filterMenuByCategory()}
+                    renderItem={({ item }) => (
+                        <View style={styles.menuItem}>
+                            <Image source={{ uri: `http://192.168.88.11:8000/storage/photo/${item.photo}` }} style={styles.image} />
+                            <View style={styles.details}>
+                                <Text style={styles.nom}>{item.nom}</Text>
+                                <Text style={styles.description}>{item.description}</Text>
+                                <Text style={styles.prix}>{item.prix} Ar</Text>
+                                <Button title="Ajouter" onPress={() => handleSelectReservation(item)} />
+                            </View>
+                        </View>
+                    )}
+                    keyExtractor={item => item.id.toString()}
+                />
+            </ScrollView>
+
+            {selectRepas.length > 0 && (
+                <View style={styles.commande}>
+                    <Text style={styles.commandeTitle}>Votre commande : {selectRepas.length} repas</Text>
+                    <Text style={styles.commandeTotal}>
+                        Prix total : {selectRepas.reduce((total, repas) => total + repas.prix * repas.quantite, 0)} Ar
+                    </Text>
+                    <Button title="Passer la commande" onPress={handlePasserCommande} />
+                </View>
+            )}
+
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContent}>
+                    <Button title="Fermer" onPress={() => setModalVisible(false)} />
+                    {/* Modal content goes here */}
+                </View>
+            </Modal>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 2,
-    backgroundColor: '#fff',
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  itemContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    margin: 5,
-    padding: 10,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 10,
-  },
-  image: {
-    width: 170,
-    height: 170,
-    borderRadius: 7,
-    marginBottom: 10,
-  },
-  textContainer: {
-    alignItems: 'center',
-  },
-  itemText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  priceText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  addButton: {
-    marginTop: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFA500',
-    borderRadius: 5,
-  },
-  addButtonText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  cartButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: 'rgba(10, 100, 255, 0.8)',
-    borderRadius: 5,
-    alignItems: 'center',
-       marginBottom: 65
-  },
-  cartButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: 'bold',
-
-  },
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+    categoryContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginBottom: 10,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        marginVertical: 10,
+    },
+    image: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
+    },
+    details: {
+        flex: 1,
+        paddingLeft: 10,
+    },
+    nom: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    description: {
+        fontSize: 14,
+        color: 'grey',
+    },
+    prix: {
+        fontSize: 16,
+        color: 'green',
+    },
+    commande: {
+        padding: 10,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 10,
+        marginTop: 10,
+    },
+    commandeTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    commandeTotal: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    modalContent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
+
+export default Nouveaux;
