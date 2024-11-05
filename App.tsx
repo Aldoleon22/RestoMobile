@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './src/Login'; // Chemin vers votre composant Login
 import Navigation from './src/Navigation'; // Chemin vers votre composant Home
-
+import MenuScreen from './src/components/MenuCompo';
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -18,7 +18,12 @@ const App = () => {
         <Stack.Screen
           name="Home"
           component={Navigation}
-          options={{ title: false , headerShown: false }} // Affiche l'en-tête pour l'écran d'accueil si nécessaire
+          options={{ title: false, headerShown: false }} // Affiche l'en-tête pour l'écran d'accueil si nécessaire
+        />
+        <Stack.Screen
+          name="Menu"
+          component={MenuScreen}
+          options={{ headerShown: true }}
         />
       </Stack.Navigator>
     </NavigationContainer>

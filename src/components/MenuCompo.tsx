@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -8,10 +8,10 @@ export default function MenuScreen({ navigation,route }) {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  // const {id} = route.params;
+  const {id} = route.params;
 
   useEffect(() => {
-    axios.get('http://192.168.88.12:8000/api/listemenu')
+    axios.get('http://192.168.88.18:8000/api/listemenu')
       .then(response => {
         setMenu(response.data.liste);
         setLoading(false);
@@ -21,6 +21,7 @@ export default function MenuScreen({ navigation,route }) {
         setLoading(false);
       });
   }, []);
+
 
   const addToCart = (item) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -42,7 +43,7 @@ export default function MenuScreen({ navigation,route }) {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.12:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `http://192.168.88.18:8000/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.itemText}>{item.nom}</Text>
         <Text style={styles.priceText}>
@@ -81,7 +82,7 @@ export default function MenuScreen({ navigation,route }) {
           numColumns={2}
         />
       )}
-      <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart', { cart })}>
+      <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart', { cart,id })}>
         <Text style={styles.cartButtonText}>Voir le Panier</Text>
       </TouchableOpacity>
     </View>
