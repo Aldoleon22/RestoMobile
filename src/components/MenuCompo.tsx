@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ApiService from '../../axiosConfig';
 
 export default function MenuScreen({ navigation }) {
   const [menu, setMenu] = useState([]);
@@ -10,7 +11,7 @@ export default function MenuScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    axios.get('http://192.168.88.16:8000/api/listemenu')
+    ApiService.get('/listemenu')
       .then(response => {
         setMenu(response.data.liste);
         setLoading(false);
