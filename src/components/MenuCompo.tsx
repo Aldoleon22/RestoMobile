@@ -86,22 +86,20 @@ const handlePasserCommande = async () => {
         return;
     }
 
-    // Préparer les données pour l'envoi
+    // Prepare the payload according to what your backend expects
     const itemsToSend = selectRepas.map(repas => ({
-        menus_id: repas.id,
+        menus_id: repas.id,   // Use the correct field name expected by your backend
         quantite: repas.quantite,
     }));
 
     try {
-        // Envoie chaque item comme une requête individuelle
         const response = await ApiService.post(`/commande/add`, {
-            menus_id: itemsToSend.map(item => item.menus_id),
-            quantite: itemsToSend.map(item => item.quantite),
-            tableId: tableId,
+            items: itemsToSend,
+            tableId: tableId,  // Include tableId if needed
         });
 
         if (response.data.success) {
-            Alert.alert("Succès", "Commande validée avec succès");
+            toast.success("Commande validée avec succès");
             navigation.navigate('Table');
         } else {
             Alert.alert("Erreur", response.data.message || "Une erreur s'est produite lors de la validation de la commande.");
@@ -116,8 +114,6 @@ const handlePasserCommande = async () => {
         }
     }
 };
-
-
 
 
     if (loading) return <Text>Chargement...</Text>;
@@ -141,7 +137,7 @@ const handlePasserCommande = async () => {
                     data={filterMenuByCategory()}
                     renderItem={({ item }) => (
                         <View style={styles.menuItem}>
-                            <Image source={{ uri: `http://192.168.88.11:8000/storage/photo/${item.photo}` }} style={styles.image} />
+                            <Image source={{ uri:'http://192.168.88.11:8000/storage/${item.photo}' }} style={styles.image} />
                             <View style={styles.details}>
                                 <Text style={styles.nom}>{item.nom}</Text>
                                 <Text style={styles.description}>{item.description}</Text>

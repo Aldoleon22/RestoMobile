@@ -86,6 +86,7 @@ const Navigation = () => (
       component={ProfileScreen}
       options={{
         title: 'Profil',
+        headerShown: false,
         tabBarIcon: ({ color, focused }) => (
           <View style={[styles.iconContainer, focused && styles.focused]}>
             <Icon name="person" size={24} color={color} />

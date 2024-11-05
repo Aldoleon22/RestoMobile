@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ScrollView } from 'react-native';
-import ApiService from './../../axiosConfig';
+import ApiService from '../../axiosConfig';
+import { IMG_URL } from '../../apiConfig';
 
 export default function HomeScreen({ navigation }) {
   const [menu, setMenu] = useState([]);
@@ -10,7 +11,7 @@ export default function HomeScreen({ navigation }) {
   const scrollRefs = useRef({});
 
   useEffect(() => {
-    ApiService.get(`/listemenu`)
+    ApiService.get('/listemenu')
       .then(response => {
         console.log(response.data); // Log the response to check its structure
         setMenu(response.data.liste);
@@ -71,7 +72,7 @@ export default function HomeScreen({ navigation }) {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.popularCard}>
-              <Image source={{ uri: `http://192.168.88.11:8000/storage/photo/${item.photo}` }} style={styles.popularImage} />
+              <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.popularImage} />
               <Text style={styles.popularText}>{item.nom}</Text>
               <Text style={styles.priceText}>{item.prix} Ar</Text>
             </View>
@@ -90,7 +91,7 @@ export default function HomeScreen({ navigation }) {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.popularCard}>
-              <Image source={{ uri: `http://192.168.88.16:8000/storage/photo/${item.photo}` }} style={styles.popularImage} />
+              <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.popularImage} />
               <Text style={styles.popularText}>{item.nom}</Text>
               <Text style={styles.priceText}>{item.prix} Ar</Text>
             </View>
@@ -109,7 +110,7 @@ export default function HomeScreen({ navigation }) {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.popularCard}>
-              <Image source={{ uri: `http://192.168.88.16:8000/storage/photo/${item.photo}` }} style={styles.popularImage} />
+              <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.popularImage} />
               <Text style={styles.popularText}>{item.nom}</Text>
               <Text style={styles.priceText}>{item.prix} Ar</Text>
             </View>
