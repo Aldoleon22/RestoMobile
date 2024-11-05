@@ -12,7 +12,7 @@ const TableCompo = () => {
     const Stack = createStackNavigator();
     const handlegetTable = (async () => {
         try {
-            const response = await axios.get('http://192.168.88.16:8000/api/tables');
+            const response = await axios.get('http://192.168.88.11:8000/api/tables');
             SetTable(response.data);
         }
         catch (error) {

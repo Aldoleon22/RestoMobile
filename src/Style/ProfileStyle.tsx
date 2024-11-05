@@ -18,7 +18,7 @@ export const Profile = StyleSheet.create({
     height: 100,
     flexDirection: 'column',
     position: 'absolute',
-    top: 150,
+    top: 120,
   },
   nom: {
     color: 'white',
@@ -40,6 +40,32 @@ export const Profile = StyleSheet.create({
     position: 'absolute',
     top: 250,
     overflow:'hidden',
+    alignItems:'center',
+    justifyContent:'center'
   },
-  
+  img:{
+    width:'110%',
+    height:'110%',
+  },
+  logoutButtont:{
+    backgroundColor:'#6499E9',
+    position:'absolute',
+    top:560,
+    width:150,
+    height:50,
+    borderRadius:5,
+    alignItems:'center',
+    justifyContent:'center',
+  },
+  logoutText:{
+    textAlign:'center',
+    fontSize:20,
+    fontWeight:'bold',
+    color:'white'
+  },
+  role:{
+    fontSize:25,
+    position:'absolute',
+    top:480
+  },
 });

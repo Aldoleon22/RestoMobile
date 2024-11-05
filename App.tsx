@@ -1,27 +1,33 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import Login from './src/Login'; // Chemin vers votre composant Login
-import Navigation from './src/Navigation'; // Chemin vers votre composant Home
+import Login from './src/Login';
+import Navigation from './src/Navigation';
+import { AuthProvider, AuthContext } from './src/AuthContext';
 
 const Stack = createStackNavigator();
 
+const AppNavigator = () => {
+  const { user } = useContext(AuthContext);
+
+  return (
+    <Stack.Navigator initialRouteName={user ? 'Home' : 'Login'}>
+      {!user ? (
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+      ) : (
+        <Stack.Screen name="Home" component={Navigation} options={{ headerShown: false }} />
+      )}
+    </Stack.Navigator>
+  );
+};
+
 const App = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ headerShown: false }} // Masquer l'en-tête et la flèche de retour
-        />
-        <Stack.Screen
-          name="Home"
-          component={Navigation}
-          options={{ title: false , headerShown: false }} // Affiche l'en-tête pour l'écran d'accueil si nécessaire
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 

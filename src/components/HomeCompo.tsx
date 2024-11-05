@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ScrollView } from 'react-native';
 import ApiService from '../../axiosConfig';
@@ -7,7 +6,7 @@ import { IMG_URL } from '../../apiConfig';
 export default function HomeScreen({ navigation }) {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Create a ref to store scrollable FlatLists
   const scrollRefs = useRef({});
 
@@ -39,12 +38,6 @@ export default function HomeScreen({ navigation }) {
         offset += direction * scrollAmount; // Adjust offset based on direction
 
         scrollViewRef.scrollToOffset({ offset, animated: true });
-
-        // Clear the interval if it reaches the end of the content
-        scrollViewRef.getScrollResponder().scrollTo({
-          x: offset,
-          animated: true,
-        });
 
         // Stop scrolling if it goes out of bounds
         if (offset < 0 || offset > (scrollViewRef.props.data.length * 140) - 140) { // 140 is the width of the card
