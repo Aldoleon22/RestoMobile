@@ -86,20 +86,22 @@ const handlePasserCommande = async () => {
         return;
     }
 
-    // Prepare the payload according to what your backend expects
+    // Préparer les données pour l'envoi
     const itemsToSend = selectRepas.map(repas => ({
-        menus_id: repas.id,   // Use the correct field name expected by your backend
+        menus_id: repas.id,
         quantite: repas.quantite,
     }));
 
     try {
+        // Envoie chaque item comme une requête individuelle
         const response = await ApiService.post(`/commande/add`, {
-            items: itemsToSend,
-            tableId: tableId,  // Include tableId if needed
+            menus_id: itemsToSend.map(item => item.menus_id),
+            quantite: itemsToSend.map(item => item.quantite),
+            tableId: tableId,
         });
 
         if (response.data.success) {
-            toast.success("Commande validée avec succès");
+            Alert.alert("Succès", "Commande validée avec succès");
             navigation.navigate('Table');
         } else {
             Alert.alert("Erreur", response.data.message || "Une erreur s'est produite lors de la validation de la commande.");
@@ -114,6 +116,8 @@ const handlePasserCommande = async () => {
         }
     }
 };
+
+
 
 
     if (loading) return <Text>Chargement...</Text>;
@@ -211,7 +215,7 @@ const styles = StyleSheet.create({
         color: 'green',
     },
     commande: {
-        padding: 10,
+        padding: 30,
         backgroundColor: '#f9f9f9',
         borderRadius: 10,
         marginTop: 10,
