@@ -4,6 +4,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from './src/Login';
 import Navigation from './src/Navigation';
 import { AuthProvider, AuthContext } from './src/AuthContext';
+import MenuScreen from './src/components/MenuCompo';
+import CartScreen from './src/components/CartCompo';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +19,9 @@ const AppNavigator = () => {
       ) : (
         <Stack.Screen name="Home" component={Navigation} options={{ headerShown: false }} />
       )}
+       {/* <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} /> */}
+      <Stack.Screen name='Menu' component={MenuScreen} options={{headerShown: true }} />
+      <Stack.Screen name='Cart' component={CartScreen} options={{headerShown: true }} />
     </Stack.Navigator>
   );
 };

@@ -13,7 +13,7 @@ export default function MenuScreen({ navigation,route }) {
   const {id} = route.params;
 
   useEffect(() => {
-    axios.get('http://192.168.88.18:8000/api/listemenu')
+    ApiService.get('/listemenu')
       .then(response => {
         setMenu(response.data.liste);
         setLoading(false);
@@ -45,7 +45,7 @@ export default function MenuScreen({ navigation,route }) {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.18:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.itemText}>{item.nom}</Text>
         <Text style={styles.priceText}>

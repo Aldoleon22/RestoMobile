@@ -2,6 +2,8 @@ import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ApiService from '../../axiosConfig';
+import { IMG_URL } from '../../apiConfig';
 
 const CartScreen = ({ route }) => {
   const [cartItems, setCartItems] = useState([]);
@@ -40,11 +42,11 @@ const CartScreen = ({ route }) => {
 
   const fetchlastCommande = useCallback(async (id) => {
     try {
-      const response = await axios.get(`http://192.168.88.18:8000/api/commande/table/${id}/last`);
+      const response = await ApiService.get(`/commande/table/${id}/last`);
       const derniereCommande = response.data.commande;
 
       if (derniereCommande && derniereCommande.archived === 0) {
-        const listCommande = await axios.get(`http://192.168.88.18:8000/api/commande/tables/${id}`);
+        const listCommande = await ApiService.get(`/commande/tables/${id}`);
         const commandeActif = listCommande.data.commandes.filter(item => item.archived != 1);
 
         setCartItems(
@@ -126,7 +128,7 @@ const CartScreen = ({ route }) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.18:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.nom}</Text>
         <View style={styles.quantityContainer}>
@@ -147,9 +149,9 @@ const CartScreen = ({ route }) => {
   const handlecommande = async () => {
     try {
       if (commandeId) {
-        await axios.put(`http://192.168.88.18:8000/api/commande/update`, Cartvalidate);
+        await ApiService.put(`/commande/update`, Cartvalidate);
       } else {
-        await axios.post(`http://192.168.88.18:8000/api/commande/add`, Cartvalidate);
+        await ApiService.post(`/commande/add`, Cartvalidate);
       }
       setCartItems([]);
     } catch (error) {

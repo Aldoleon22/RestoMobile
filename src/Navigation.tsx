@@ -60,18 +60,6 @@ const Navigation = () => (
       }}
     />
     <Tab.Screen
-      name="Cart"
-      component={CartScreen}
-      options={{
-        title: 'Panier',
-        tabBarIcon: ({ color, focused }) => (
-          <View style={[styles.iconContainer, focused && styles.focused]}>
-            <Icon name="shopping-cart" size={24} color={color} />
-          </View>
-        ),
-      }}
-    />
-    <Tab.Screen
       name="Profile"
       component={ProfileScreen}
       options={{
