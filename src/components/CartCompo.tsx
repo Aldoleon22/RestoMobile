@@ -18,8 +18,10 @@ const CartScreen = ({ route }) => {
     menus_id: [],
     quantite: []
   });
-  // console.log('valideCart', Cartvalidate);
-
+  /////////////////////////////////////////////////
+  // console.log('valideCart', Cartvalidate); ////
+  // recuperation des elements slectionnes //////
+  //////////////////////////////////////////////
   useEffect(() => {
     if (Array.isArray(cart)) {
       setCartItems(prevItems => {
@@ -56,6 +58,14 @@ const CartScreen = ({ route }) => {
       quantite: quantite,
     }));
   }, [cartItems, id, commandeId]);
+
+  ////////////////////////
+  // end recuperation ///
+  //////////////////////
+
+  ////////////////////////////////////
+  /// check commande non archived ///
+  //////////////////////////////////
 
   const fetchlastCommande = useCallback(async (id) => {
     try {
@@ -102,10 +112,17 @@ const CartScreen = ({ route }) => {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     if (id) fetchlastCommande(id);
   }, [id, fetchlastCommande]);
+  
+  ///////////////////////////////////
+  //// end commande non archived ///
+  /////////////////////////////////
+
+  //////////////////////////////////////////
+  // action liée au items selectionnées ///
+  ////////////////////////////////////////
 
   const totalAmount = cartItems.reduce((sum, item) => sum + item.prix * item.quantity, 0).toFixed(2);
 
@@ -157,6 +174,14 @@ const CartScreen = ({ route }) => {
     }
   };
 
+  /////////////////////////////////////////////
+  // ends action des items selectionnées//////
+  ///////////////////////////////////////////
+
+  /////////////////////////////////////////
+  /// affichage des items selectionnées///
+  ///////////////////////////////////////
+
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.image} />
@@ -177,6 +202,14 @@ const CartScreen = ({ route }) => {
     </View>
   );
 
+  //////////////////////////////////////////////
+  // end affichage des items sellectionnées////
+  ////////////////////////////////////////////
+
+  ///////////////////////////////////////
+  // ajout des nouvelles commandes /////
+  ///////////////////////////////////// 
+
   const handlecommande = async () => {
     try {
       if (commandeId) {
@@ -189,6 +222,9 @@ const CartScreen = ({ route }) => {
       console.log("Erreur lors de la commande :", error.response);
     }
   };
+  /////////////////////////////////////
+  /// end ajout nouvelles commandes///
+  ///////////////////////////////////
 
   return (
     <>
