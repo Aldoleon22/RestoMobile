@@ -8,6 +8,7 @@ import CartScreen from './components/CartCompo';
 import ProfileScreen from './components/ProfilCompo';
 import Table from './components/TableCompo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Login from './Login';
 
 const Tab = createBottomTabNavigator();
 
@@ -59,22 +60,11 @@ const Navigation = () => (
       }}
     />
     <Tab.Screen
-      name="Cart"
-      component={CartScreen}
-      options={{
-        title: 'Panier',
-        tabBarIcon: ({ color, focused }) => (
-          <View style={[styles.iconContainer, focused && styles.focused]}>
-            <Icon name="shopping-cart" size={24} color={color} />
-          </View>
-        ),
-      }}
-    />
-    <Tab.Screen
       name="Profile"
       component={ProfileScreen}
       options={{
         title: 'Profil',
+        headerShown: false,
         tabBarIcon: ({ color, focused }) => (
           <View style={[styles.iconContainer, focused && styles.focused]}>
             <Icon name="person" size={24} color={color} />

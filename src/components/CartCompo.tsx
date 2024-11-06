@@ -2,6 +2,8 @@ import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ApiService from '../../axiosConfig';
+import { IMG_URL } from '../../apiConfig';
 
 const CartScreen = ({ route }) => {
   const [cartItems, setCartItems] = useState([]);
@@ -41,11 +43,11 @@ const CartScreen = ({ route }) => {
 
   const fetchlastCommande = useCallback(async (id) => {
     try {
-      const response = await axios.get(`http://192.168.88.18:8000/api/commande/table/${id}/last`);
+      const response = await ApiService.get(`/commande/table/${id}/last`);
       const derniereCommande = response.data.commande;
 
       if (derniereCommande && derniereCommande.archived === 0) {
-        const listCommande = await axios.get(`http://192.168.88.18:8000/api/commande/tables/${id}`);
+        const listCommande = await ApiService.get(`/commande/tables/${id}`);
         const commandeActif = listCommande.data.commandes.filter(item => item.archived != 1);
 
         setCartItems(
@@ -80,31 +82,68 @@ const CartScreen = ({ route }) => {
 
   const totalAmount = cartItems.reduce((sum, item) => sum + item.prix * item.quantity, 0).toFixed(2);
 
-  const updateQuantity = (id, operation) => {
-    setCartItems(prevItems => {
-      return prevItems.map(item => {
-        if (item.id === id) {
-          const newQuantity = operation === 'increase' ? item.quantity + 1 : Math.max(0, item.quantity - 1);
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      });
-    });
+  const updateQuantity = async (id, operation) => {
+    const item = cartItems.find(item => item.id === id);
+    const newQuantity = operation === 'increase' ? item.quantity + 1 : Math.max(0, item.quantity - 1);
+
+    // Update local state
+    setCartItems(prevItems => prevItems.map(item =>
+      item.id === id ? { ...item, quantity: newQuantity } : item
+    ));
+
+    // Update in the database
+    try {
+      await ApiService.put(`/commande/${id}`, { quantity: newQuantity }); // Adjust the endpoint
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la quantité :", error);
+      Alert.alert("Erreur lors de la mise à jour de la quantité");
+    }
   };
 
-  const removeItem = (id) => {
+  const removeItem = async (id) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+
+    try {
+      await ApiService.delete(`/commande/${id}`); // Adjust the endpoint
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'article :", error);
+      Alert.alert("Erreur lors de la suppression de l'article");
+    }
+  };
+
+  const submitOrder = async () => {
+    if (cartItems.length === 0) {
+      Alert.alert("Votre panier est vide");
+      return;
+    }
+
+    try {
+      const response = await ApiService.post('/orders', { items: cartItems });
+      if (response.data.success) {
+        Alert.alert("Commande réussie", response.data.message);
+        setCartItems([]); // Clear cart after order
+      } else {
+        Alert.alert("Erreur", response.data.message);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de la commande :", error);
+      Alert.alert("Erreur lors de l'envoi de la commande");
+    }
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: `http://192.168.88.18:8000/storage/photo/${item.photo}` }} style={styles.image} />
+      <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.nom}</Text>
         <View style={styles.quantityContainer}>
-          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'decrease')}><Text style={styles.quantityText}>-</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'decrease')}>
+            <Text style={styles.quantityText}>-</Text>
+          </TouchableOpacity>
           <Text style={styles.quantity}>{item.quantity}</Text>
-          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'increase')}><Text style={styles.quantityText}>+</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'increase')}>
+            <Text style={styles.quantityText}>+</Text>
+          </TouchableOpacity>
         </View>
       </View>
       <Text style={styles.itemPrice}>{(item.prix * item.quantity).toFixed(2)} Ar</Text>
@@ -115,9 +154,9 @@ const CartScreen = ({ route }) => {
   const handlecommande = async () => {
     try {
       if (commandeId) {
-        await axios.put(`http://192.168.88.18:8000/api/commande/update`, Cartvalidate);
+        await ApiService.put(`/commande/update`, Cartvalidate);
       } else {
-        await axios.post(`http://192.168.88.18:8000/api/commande/add`, Cartvalidate);
+        await ApiService.post(`/commande/add`, Cartvalidate);
       }
       setCartItems([]);
     } catch (error) {
@@ -158,43 +197,33 @@ const CartScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffF',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    padding: 20,
+    backgroundColor: '#fff',
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  date: {
-    fontSize: 16,
-    color: '#555',
-  },
-  addOrder: {
-    color: '#999',
-    marginVertical: 10,
+    marginBottom: 20,
   },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 10,
-    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingVertical: 10,
   },
   image: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    marginRight: 10,
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 15,
   },
   itemDetails: {
     flex: 1,
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -202,41 +231,41 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   quantityButton: {
-    width: 25,
-    height: 25,
+    width: 30,
+    height: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#ddd',
     borderRadius: 5,
   },
   quantityText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   quantity: {
-    marginHorizontal: 8,
-    fontSize: 16,
+    marginHorizontal: 10,
+    fontSize: 18,
   },
   itemPrice: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    color: 'green',
   },
   deleteButton: {
-    padding: 5,
     marginLeft: 10,
-    backgroundColor: '#FFEBEE',
-    borderRadius: 5,
   },
   deleteText: {
-    color: '#E53935',
-    fontWeight: 'bold',
+    fontSize: 18,
+    color: 'red',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 20,
-    padding: 20,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
   },
   totalText: {
     fontSize: 18,
@@ -245,19 +274,17 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'green',
   },
   checkoutButton: {
-    backgroundColor: 'rgba(10, 100, 255, 0.8)',
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginTop: 2,
+    backgroundColor: '#007BFF',
+    padding: 15,
+    borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 50,
-
-
+    marginTop: 20,
   },
   checkoutText: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',

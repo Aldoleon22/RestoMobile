@@ -3,6 +3,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Button, StyleSheet, Text, View, ScrollView, Alert, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ApiService from '../../axiosConfig';
 
 const TableCompo = ({navigation}) => {
 
@@ -12,7 +13,7 @@ const TableCompo = ({navigation}) => {
     const Stack = createStackNavigator();
     const handlegetTable = (async () => {
         try {
-            const response = await axios.get('http://192.168.88.18:8000/api/tables');
+            const response = await ApiService.get('/tables');
             SetTable(response.data);
         }
         catch (error) {
