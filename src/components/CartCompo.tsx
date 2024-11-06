@@ -18,10 +18,26 @@ const CartScreen = ({ route }) => {
     menus_id: [],
     quantite: []
   });
-  console.log('valideCart', Cartvalidate);
+  // console.log('valideCart', Cartvalidate);
 
   useEffect(() => {
-    if (cart) setCartItems(cart);
+    if (Array.isArray(cart)) {
+      setCartItems(prevItems => {
+        const updatedItems = [...prevItems];
+        
+        cart.forEach(newItem => {
+          const existingItemIndex = updatedItems.findIndex(item => item.id === newItem.id);
+          
+          if (existingItemIndex !== -1) {
+            updatedItems[existingItemIndex].quantity += newItem.quantity;
+          } else {
+            updatedItems.push(newItem);
+          }
+        });
+        
+        return updatedItems;
+      });
+    }
     if (id) setNumTable(id);
   }, [cart, id]);
 
@@ -50,18 +66,29 @@ const CartScreen = ({ route }) => {
         const listCommande = await ApiService.get(`/commande/tables/${id}`);
         const commandeActif = listCommande.data.commandes.filter(item => item.archived != 1);
 
-        setCartItems(
+        setCartItems(prevItems => {
+          const updatedItems = prevItems.map(item => ({ ...item })); 
           commandeActif.flatMap(item =>
-            item.menus.map(menu => ({
-              nom: menu.nom,
-              quantity: menu.pivot.quantite,
-              photo: menu.photo,
-              prix: menu.prix,
-              id: menu.id
-            }))
-          )
-        );
-
+            item.menus.forEach(menu => {
+              const existingItem = updatedItems.find(item => item.id === menu.id);
+              
+              if (existingItem) {
+                existingItem.quantity += menu.pivot.quantite;
+              } else {
+                updatedItems.push({
+                  nom: menu.nom,
+                  quantity: menu.pivot.quantite,
+                  photo: menu.photo,
+                  prix: menu.prix,
+                  id: menu.id
+                });
+              }
+            })
+          );
+        
+          return updatedItems;
+        });
+        
         if (commandeActif.length > 0) {
           setCommandeId(commandeActif[0].id);
         }else{
@@ -92,23 +119,22 @@ const CartScreen = ({ route }) => {
     ));
 
     // Update in the database
-    try {
-      await ApiService.put(`/commande/${id}`, { quantity: newQuantity }); // Adjust the endpoint
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la quantité :", error);
-      Alert.alert("Erreur lors de la mise à jour de la quantité");
-    }
+    // try {
+    //   await ApiService.put(`/commande/${id}`, { quantity: newQuantity }); // Adjust the endpoint
+    // } catch (error) {
+    //   console.error("Erreur lors de la mise à jour de la quantité :", error);
+    //   Alert.alert("Erreur lors de la mise à jour de la quantité");
+    // }
   };
 
   const removeItem = async (id) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== id));
-
-    try {
-      await ApiService.delete(`/commande/${id}`); // Adjust the endpoint
-    } catch (error) {
-      console.error("Erreur lors de la suppression de l'article :", error);
-      Alert.alert("Erreur lors de la suppression de l'article");
-    }
+    // try {
+    //   await ApiService.delete(`/commande/${id}`);
+    // } catch (error) {
+    //   console.error("Erreur lors de la suppression de l'article :", error);
+    //   Alert.alert("Erreur lors de la suppression de l'article");
+    // }
   };
 
   const submitOrder = async () => {
