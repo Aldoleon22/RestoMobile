@@ -31,13 +31,14 @@ export default function ProfileScreen({navigation}) {
 
 // deconnection
 const handleLogout = async () => {
+  navigation.reset({
+    index: 0,
+    routes: [{ name: 'Login' }],
+  });
   try {
-    const response = await AsyncStorage.removeItem('userData');
-    console.log('====================================');
-    console.log(response);
-    console.log('====================================');
-
-    // navigation.navigate('Login'); // Remplace 'Login' par le nom de l'écran de connexion
+  
+    await AsyncStorage.removeItem('userData');
+    await AsyncStorage.removeItem('token');
   } catch (error) {
     console.error("Erreur lors de la déconnexion :", error);
   }

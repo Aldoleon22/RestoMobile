@@ -8,6 +8,7 @@ import CartScreen from './components/CartCompo';
 import ProfileScreen from './components/ProfilCompo';
 import Table from './components/TableCompo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Login from './Login';
 
 const Tab = createBottomTabNavigator();
 
