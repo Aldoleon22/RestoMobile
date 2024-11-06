@@ -115,7 +115,7 @@ const CartScreen = ({ route }) => {
   useEffect(() => {
     if (id) fetchlastCommande(id);
   }, [id, fetchlastCommande]);
-  
+
   ///////////////////////////////////
   //// end commande non archived ///
   /////////////////////////////////
