@@ -11,11 +11,12 @@ const CartScreen = ({ route }) => {
   const [error, setError] = useState('');
   const { cart, id } = route.params;
   const [Cartvalidate, setCartvalidate] = useState({
-    id: commandeId,
+    id: commandeId ? commandeId : '',
     table_id: '',
     menus_id: [],
     quantite: []
   });
+  console.log('valideCart', Cartvalidate);
 
   useEffect(() => {
     if (cart) setCartItems(cart);
@@ -24,7 +25,7 @@ const CartScreen = ({ route }) => {
 
   useEffect(() => {
     updateCartValidate();
-  }, [cartItems, commandeId]);
+  }, [cartItems]);
 
   const updateCartValidate = useCallback(() => {
     const menuId = cartItems.map(item => item.id);
@@ -59,7 +60,11 @@ const CartScreen = ({ route }) => {
           )
         );
 
-        if (commandeActif.length > 0) setCommandeId(commandeActif[0].id);
+        if (commandeActif.length > 0) {
+          setCommandeId(commandeActif[0].id);
+        }else{
+          setCommandeId(null);
+        }
       }
     } catch (error) {
       console.log("Erreur lors de la récupération de la commande :", error);
