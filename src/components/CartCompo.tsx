@@ -20,7 +20,7 @@ const CartScreen = ({ route }) => {
   });
 
   useEffect(() => {
-    if (cart) setCartItems(cart);
+    if (Array.isArray(cart)) setCartItems([...cartItems, ...cart]);
     if (id) setNumTable(id);
   }, [cart, id]);
 
@@ -49,8 +49,9 @@ const CartScreen = ({ route }) => {
         const listCommande = await ApiService.get(`/commande/tables/${id}`);
         const commandeActif = listCommande.data.commandes.filter(item => item.archived != 1);
 
-        setCartItems(
-          commandeActif.flatMap(item =>
+        setCartItems([
+          ...cartItems,
+          ...commandeActif.flatMap(item =>
             item.menus.map(menu => ({
               nom: menu.nom,
               quantity: menu.pivot.quantite,
@@ -59,7 +60,7 @@ const CartScreen = ({ route }) => {
               id: menu.id
             }))
           )
-        );
+        ]);
 
         if (commandeActif.length > 0) setCommandeId(commandeActif[0].id);
       }

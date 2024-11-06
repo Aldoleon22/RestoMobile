@@ -19,7 +19,7 @@ const AppNavigator = () => {
       ) : (
         <Stack.Screen name="Home" component={Navigation} options={{ headerShown: false }} />
       )}
-       {/* <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} /> */}
+       {/* <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />cnd */}
       <Stack.Screen name='Menu' component={MenuScreen} options={{headerShown: true }} />
       <Stack.Screen name='Cart' component={CartScreen} options={{headerShown: true }} />
     </Stack.Navigator>

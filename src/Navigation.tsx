@@ -1,7 +1,7 @@
 // src/Navigation.js
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {View, StyleSheet} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomeScreen from './components/HomeCompo';
 import MenuScreen from './components/MenuCompo';
 import CartScreen from './components/CartCompo';
@@ -24,7 +24,7 @@ const Navigation = () => (
         backgroundColor: '#FFEB3B',
         elevation: 5,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.2,
         shadowRadius: 8,
         paddingVertical: 10,
@@ -32,29 +32,27 @@ const Navigation = () => (
       tabBarIconStyle: {
         marginBottom: 5,
       },
-    }}
-  >
-    <Tab.Screen
-      name="Home"
-      component={HomeScreen}
-      options={{
-        title: '',
-        tabBarIcon: ({ color, focused }) => (
-          <View style={[styles.iconContainer, focused && styles.focused]}>
-            <Icon name="home" size={24} color={focused ? '#000' : color} />
-          </View>
-        ),
-      }}
-    />
-
+    }}>
     <Tab.Screen
       name="Table"
       component={Table}
       options={{
         title: 'Table',
-        tabBarIcon: ({ color, focused }) => (
+        tabBarIcon: ({color, focused}) => (
           <View style={[styles.iconContainer, focused && styles.focused]}>
             <Icon name="table-restaurant" size={24} color={color} />
+          </View>
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="Home"
+      component={HomeScreen}
+      options={{
+        title: '',
+        tabBarIcon: ({color, focused}) => (
+          <View style={[styles.iconContainer, focused && styles.focused]}>
+            <Icon name="home" size={24} color={focused ? '#000' : color} />
           </View>
         ),
       }}
@@ -65,7 +63,7 @@ const Navigation = () => (
       options={{
         title: 'Profil',
         headerShown: false,
-        tabBarIcon: ({ color, focused }) => (
+        tabBarIcon: ({color, focused}) => (
           <View style={[styles.iconContainer, focused && styles.focused]}>
             <Icon name="person" size={24} color={color} />
           </View>
@@ -89,7 +87,7 @@ const styles = StyleSheet.create({
     borderWidth: 7,
     borderColor: '#FFEB3B',
     shadowColor: '#FFEB3B',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: {width: 0, height: 8},
     shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 10,
