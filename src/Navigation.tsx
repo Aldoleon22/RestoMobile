@@ -35,30 +35,6 @@ const Navigation = () => (
     }}
   >
     <Tab.Screen
-      name="Table"
-      component={Table}
-      options={{
-        title: 'Table',
-        tabBarIcon: ({ color, focused }) => (
-          <View style={[styles.iconContainer, focused && styles.focused]}>
-            <Icon name="table-restaurant" size={24} color={color} />
-          </View>
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Menu"
-      component={MenuScreen}
-      options={{
-        title: 'Menu',
-        tabBarIcon: ({ color, focused }) => (
-          <View style={[styles.iconContainer, focused && styles.focused]}>
-            <Icon name="restaurant" size={24} color={color} />
-          </View>
-        ),
-      }}
-    />
-    <Tab.Screen
       name="Home"
       component={HomeScreen}
       options={{
@@ -66,6 +42,19 @@ const Navigation = () => (
         tabBarIcon: ({ color, focused }) => (
           <View style={[styles.iconContainer, focused && styles.focused]}>
             <Icon name="home" size={24} color={focused ? '#000' : color} />
+          </View>
+        ),
+      }}
+    />
+
+    <Tab.Screen
+      name="Table"
+      component={Table}
+      options={{
+        title: 'Table',
+        tabBarIcon: ({ color, focused }) => (
+          <View style={[styles.iconContainer, focused && styles.focused]}>
+            <Icon name="table-restaurant" size={24} color={color} />
           </View>
         ),
       }}

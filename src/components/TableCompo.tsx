@@ -5,11 +5,11 @@ import { Button, StyleSheet, Text, View, ScrollView, Alert, ActivityIndicator } 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ApiService from '../../axiosConfig';
 
-const TableCompo = () => {
+const TableCompo = ({navigation}) => {
 
     const [Tables, SetTable] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState('');
     const Stack = createStackNavigator();
     const handlegetTable = (async () => {
         try {
@@ -28,6 +28,10 @@ const TableCompo = () => {
     useEffect(() => {
         handlegetTable();
     }, []);
+
+    const handlecommande = ((id) =>{
+        navigation.navigate('Menu',{id});
+    })
     return (
         <View style={styles.fluidContent}>
 
@@ -53,7 +57,7 @@ const TableCompo = () => {
                                 style={{ marginTop: 5, }}> Table a {tables.places} personnes</Text></View>
                         </View>
                         <View style={styles.btnaction}>
-                            <Button title='Passer au commande' />
+                            <Button title='Passer au commande' onPress={() => handlecommande(tables.id)}/>
                             <Text><Icon name="shopping-cart" size={45} color={'green'} /></Text>
                         </View>
                     </View>

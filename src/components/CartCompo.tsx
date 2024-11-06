@@ -1,24 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
-import ApiService from './../../axiosConfig'; // Import your API service
+import axios from 'axios';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const CartScreen = () => {
+const CartScreen = ({ route }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [numTable, setNumTable] = useState(null);
+  const [commandeId, setCommandeId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { cart, id } = route.params;
+  const [Cartvalidate, setCartvalidate] = useState({
+    id: commandeId,
+    table_id: '',
+    menus_id: [],
+    quantite: []
+  });
 
   useEffect(() => {
-    fetchCartItems(); // Fetch cart items on component mount
+    if (cart) setCartItems(cart);
+    if (id) setNumTable(id);
+  }, [cart, id]);
+
+  useEffect(() => {
+    updateCartValidate();
+  }, [cartItems, commandeId]);
+
+  const updateCartValidate = useCallback(() => {
+    const menuId = cartItems.map(item => item.id);
+    const quantite = cartItems.map(item => item.quantity);
+    setCartvalidate(prevCartvalidate => ({
+      ...prevCartvalidate,
+      id: commandeId,
+      table_id: id,
+      menus_id: menuId,
+      quantite: quantite,
+    }));
+  }, [cartItems, id, commandeId]);
+
+  const fetchlastCommande = useCallback(async (id) => {
+    try {
+      const response = await axios.get(`http://192.168.88.18:8000/api/commande/table/${id}/last`);
+      const derniereCommande = response.data.commande;
+
+      if (derniereCommande && derniereCommande.archived === 0) {
+        const listCommande = await axios.get(`http://192.168.88.18:8000/api/commande/tables/${id}`);
+        const commandeActif = listCommande.data.commandes.filter(item => item.archived != 1);
+
+        setCartItems(
+          commandeActif.flatMap(item =>
+            item.menus.map(menu => ({
+              nom: menu.nom,
+              quantity: menu.pivot.quantite,
+              photo: menu.photo,
+              prix: menu.prix,
+              id: menu.id
+            }))
+          )
+        );
+
+        if (commandeActif.length > 0) setCommandeId(commandeActif[0].id);
+      }
+    } catch (error) {
+      console.log("Erreur lors de la récupération de la commande :", error);
+    }
+    finally{
+      setLoading(false);
+    }
   }, []);
 
-  const fetchCartItems = async () => {
-    try {
-      const response = await ApiService.get('/commande'); // Adjust the endpoint as needed
-      setCartItems(response.data); // Assuming your API returns an array of items
-    } catch (error) {
-      console.error("Erreur lors de la récupération des articles du panier :", error);
-    }
-  };
+  useEffect(() => {
+    if (id) fetchlastCommande(id);
+  }, [id, fetchlastCommande]);
 
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+  const totalAmount = cartItems.reduce((sum, item) => sum + item.prix * item.quantity, 0).toFixed(2);
 
   const updateQuantity = async (id, operation) => {
     const item = cartItems.find(item => item.id === id);
@@ -71,9 +126,9 @@ const CartScreen = () => {
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={{ uri: `http://192.168.88.18:8000/storage/photo/${item.photo}` }} style={styles.image} />
       <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemName}>{item.nom}</Text>
         <View style={styles.quantityContainer}>
           <TouchableOpacity style={styles.quantityButton} onPress={() => updateQuantity(item.id, 'decrease')}>
             <Text style={styles.quantityText}>-</Text>
@@ -84,29 +139,51 @@ const CartScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.itemPrice}>{(item.price * item.quantity).toFixed(2)} Ar</Text>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(item.id)}>
-        <Text style={styles.deleteText}>✕</Text>
-      </TouchableOpacity>
+      <Text style={styles.itemPrice}>{(item.prix * item.quantity).toFixed(2)} Ar</Text>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(item.id)}><Text style={styles.deleteText}>✕</Text></TouchableOpacity>
     </View>
   );
 
+  const handlecommande = async () => {
+    try {
+      if (commandeId) {
+        await axios.put(`http://192.168.88.18:8000/api/commande/update`, Cartvalidate);
+      } else {
+        await axios.post(`http://192.168.88.18:8000/api/commande/add`, Cartvalidate);
+      }
+      setCartItems([]);
+    } catch (error) {
+      console.log("Erreur lors de la commande :", error.response);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Panier</Text>
-      <FlatList
-        data={cartItems}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-      />
-      <View style={styles.footer}>
-        <Text style={styles.totalText}>Total :</Text>
-        <Text style={styles.totalAmount}>{totalAmount} Ar</Text>
-      </View>
-      <TouchableOpacity style={styles.checkoutButton} onPress={submitOrder}>
-        <Text style={styles.checkoutText}>Payer</Text>
-      </TouchableOpacity>
-    </View>
+    <>
+    {  loading ? (
+        <ActivityIndicator size="large" color="#1096FF" style={{alignItems:'center', justifyContent: 'center'}}/>
+      ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.header}>Table N° : {numTable}</Text>
+          <Text style={styles.date}>Jeu, 6 Juin</Text>
+          <Text style={styles.addOrder}>+ Ajouter à la commande</Text>
+          <FlatList
+            data={cartItems}
+            renderItem={renderItem}
+            keyExtractor={item => item.id.toString()}
+          />
+          <View style={styles.footer}>
+            <Text style={styles.totalText}>Total :</Text>
+            <Text style={styles.totalAmount}>{totalAmount} Ar</Text>
+          </View>
+          <TouchableOpacity style={styles.checkoutButton} onPress={handlecommande}>
+            <Text style={styles.checkoutText}>Ajouter à la commande</Text>
+          </TouchableOpacity>
+        </View>
+      )
+    }
+    </>
   );
 };
 
@@ -203,6 +280,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+    color: 'white',
+
   },
 });
 
