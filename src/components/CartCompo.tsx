@@ -13,20 +13,39 @@ const CartScreen = ({ route }) => {
   const [error, setError] = useState('');
   const { cart, id } = route.params;
   const [Cartvalidate, setCartvalidate] = useState({
-    id: commandeId,
+    id: commandeId ? commandeId : '',
     table_id: '',
     menus_id: [],
     quantite: []
   });
-
+  /////////////////////////////////////////////////
+  // console.log('valideCart', Cartvalidate); ////
+  // recuperation des elements slectionnes //////
+  //////////////////////////////////////////////
   useEffect(() => {
-    if (Array.isArray(cart)) setCartItems([...cartItems, ...cart]);
+    if (Array.isArray(cart)) {
+      setCartItems(prevItems => {
+        const updatedItems = [...prevItems];
+        
+        cart.forEach(newItem => {
+          const existingItemIndex = updatedItems.findIndex(item => item.id === newItem.id);
+          
+          if (existingItemIndex !== -1) {
+            updatedItems[existingItemIndex].quantity += newItem.quantity;
+          } else {
+            updatedItems.push(newItem);
+          }
+        });
+        
+        return updatedItems;
+      });
+    }
     if (id) setNumTable(id);
   }, [cart, id]);
 
   useEffect(() => {
     updateCartValidate();
-  }, [cartItems, commandeId]);
+  }, [cartItems]);
 
   const updateCartValidate = useCallback(() => {
     const menuId = cartItems.map(item => item.id);
@@ -40,6 +59,14 @@ const CartScreen = ({ route }) => {
     }));
   }, [cartItems, id, commandeId]);
 
+  ////////////////////////
+  // end recuperation ///
+  //////////////////////
+
+  ////////////////////////////////////
+  /// check commande non archived ///
+  //////////////////////////////////
+
   const fetchlastCommande = useCallback(async (id) => {
     try {
       const response = await ApiService.get(`/commande/table/${id}/last`);
@@ -49,20 +76,34 @@ const CartScreen = ({ route }) => {
         const listCommande = await ApiService.get(`/commande/tables/${id}`);
         const commandeActif = listCommande.data.commandes.filter(item => item.archived != 1);
 
-        setCartItems([
-          ...cartItems,
-          ...commandeActif.flatMap(item =>
-            item.menus.map(menu => ({
-              nom: menu.nom,
-              quantity: menu.pivot.quantite,
-              photo: menu.photo,
-              prix: menu.prix,
-              id: menu.id
-            }))
-          )
-        ]);
-
-        if (commandeActif.length > 0) setCommandeId(commandeActif[0].id);
+        setCartItems(prevItems => {
+          const updatedItems = prevItems.map(item => ({ ...item })); 
+          commandeActif.flatMap(item =>
+            item.menus.forEach(menu => {
+              const existingItem = updatedItems.find(item => item.id === menu.id);
+              
+              if (existingItem) {
+                existingItem.quantity += menu.pivot.quantite;
+              } else {
+                updatedItems.push({
+                  nom: menu.nom,
+                  quantity: menu.pivot.quantite,
+                  photo: menu.photo,
+                  prix: menu.prix,
+                  id: menu.id
+                });
+              }
+            })
+          );
+        
+          return updatedItems;
+        });
+        
+        if (commandeActif.length > 0) {
+          setCommandeId(commandeActif[0].id);
+        }else{
+          setCommandeId(null);
+        }
       }
     } catch (error) {
       console.log("Erreur lors de la récupération de la commande :", error);
@@ -71,10 +112,17 @@ const CartScreen = ({ route }) => {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     if (id) fetchlastCommande(id);
   }, [id, fetchlastCommande]);
+  
+  ///////////////////////////////////
+  //// end commande non archived ///
+  /////////////////////////////////
+
+  //////////////////////////////////////////
+  // action liée au items selectionnées ///
+  ////////////////////////////////////////
 
   const totalAmount = cartItems.reduce((sum, item) => sum + item.prix * item.quantity, 0).toFixed(2);
 
@@ -88,23 +136,22 @@ const CartScreen = ({ route }) => {
     ));
 
     // Update in the database
-    try {
-      await ApiService.put(`/commande/${id}`, { quantity: newQuantity }); // Adjust the endpoint
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la quantité :", error);
-      Alert.alert("Erreur lors de la mise à jour de la quantité");
-    }
+    // try {
+    //   await ApiService.put(`/commande/${id}`, { quantity: newQuantity }); // Adjust the endpoint
+    // } catch (error) {
+    //   console.error("Erreur lors de la mise à jour de la quantité :", error);
+    //   Alert.alert("Erreur lors de la mise à jour de la quantité");
+    // }
   };
 
   const removeItem = async (id) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== id));
-
-    try {
-      await ApiService.delete(`/commande/${id}`); // Adjust the endpoint
-    } catch (error) {
-      console.error("Erreur lors de la suppression de l'article :", error);
-      Alert.alert("Erreur lors de la suppression de l'article");
-    }
+    // try {
+    //   await ApiService.delete(`/commande/${id}`);
+    // } catch (error) {
+    //   console.error("Erreur lors de la suppression de l'article :", error);
+    //   Alert.alert("Erreur lors de la suppression de l'article");
+    // }
   };
 
   const submitOrder = async () => {
@@ -127,6 +174,14 @@ const CartScreen = ({ route }) => {
     }
   };
 
+  /////////////////////////////////////////////
+  // ends action des items selectionnées//////
+  ///////////////////////////////////////////
+
+  /////////////////////////////////////////
+  /// affichage des items selectionnées///
+  ///////////////////////////////////////
+
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <Image source={{ uri: `${IMG_URL}/storage/photo/${item.photo}` }} style={styles.image} />
@@ -147,6 +202,14 @@ const CartScreen = ({ route }) => {
     </View>
   );
 
+  //////////////////////////////////////////////
+  // end affichage des items sellectionnées////
+  ////////////////////////////////////////////
+
+  ///////////////////////////////////////
+  // ajout des nouvelles commandes /////
+  ///////////////////////////////////// 
+
   const handlecommande = async () => {
     try {
       if (commandeId) {
@@ -159,6 +222,9 @@ const CartScreen = ({ route }) => {
       console.log("Erreur lors de la commande :", error.response);
     }
   };
+  /////////////////////////////////////
+  /// end ajout nouvelles commandes///
+  ///////////////////////////////////
 
   return (
     <>

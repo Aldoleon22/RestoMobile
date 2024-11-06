@@ -78,7 +78,7 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Logout button */}
         <TouchableOpacity onPress={handleLogout} style={Profile.logoutButtont}>
-          <Text style={Profile.logoutText}>{isLoggingOut ? 'Déconnexion en cours...' : 'Déconnexion'}</Text>
+          <Text style={Profile.logoutText}>{isLoggingOut ? 'Déconnexion...' : 'Déconnexion'}</Text>
         </TouchableOpacity>
       </LinearGradient>
     </View>
